@@ -2,7 +2,7 @@ global.storeMap = {};
 global.storeMap['KEY_ENTER'] = protractor.Key.ENTER
 global.EC = protractor.ExpectedConditions;
 //var testFilePath = './testCases/Auto_Use_Tier_Override.json';
-var testFilePath = './testCases/xxx.html';
+var testFilePath = './testCases/tci.html';
 if(testFilePath.split('.').pop() == 'html'){
 	var htmlFilePath = testFilePath;
 	if(htmlFilePath.charAt(0) === '.'){
