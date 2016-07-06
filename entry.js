@@ -2,7 +2,7 @@ global.storeMap = {};
 global.storeMap['KEY_ENTER'] = protractor.Key.ENTER
 global.EC = protractor.ExpectedConditions;
 //var testFilePath = './testCases/Auto_Use_Tier_Override.json';
-var testFilePath = './testCases/tci.html';
+var testFilePath = './testCases/xxx.html';
 if(testFilePath.split('.').pop() == 'html'){
 	var htmlFilePath = testFilePath;
 	if(htmlFilePath.charAt(0) === '.'){
@@ -42,7 +42,7 @@ if(testFilePath.split('.').pop() == 'html'){
 				tmpStep.data2 = tokens[tokenId];
 				if(tmpStep.action != 'runScript'){
 					tmpStep.data2 = tmpStep.data2.split("\r\n").join(" ")
-					tmpStep.data2 = tmpStep.data2.split("'").join('\"')
+					// tmpStep.data2 = tmpStep.data2.split("'").join('\"')
 				}
 				html2json.steps.push(tmpStep);
 				tmpStep = {};
@@ -77,32 +77,6 @@ if(testFilePath.split('.').pop() == 'html'){
 		}
 	}
 
-	// var htmlDom = cheerio.load(htmlString);
-	// var stepNum = htmlDom('tr').length;
-	// var html2json = {};
-	// html2json.testInfo = {};
-	// html2json.testInfo.discribe = htmlDom('thead').text().trim();
-	// html2json.testInfo.it = htmlDom('thead').text().trim();
-	// html2json.testInfo.type = "GI";
-	// html2json.steps = [];
-	// var tmpStep = {};
-	// htmlDom('table tbody tr').each(
-	// 	function(i){
-	// 		htmlDom(this).children('td').each(function(j){
-	// 			if(j == 0){
-	// 				tmpStep.action = htmlDom(this).text();
-	// 			}else	if(j == 1){
-	// 				tmpStep.data1 = htmlDom(this).text();
-	// 			}else if(j == 2){
-	// 				tmpStep.data2 = htmlDom(this).text();
-	// 				html2json.steps.push(tmpStep);
-	// 				tmpStep = {};
-	// 			}else{
-	// 				throw Error('error in parsing html to json');
-	// 			}
-	// 		})
-	// 	}
-	// );
 	testFilePath = testFilePath.split('.');
 	testFilePath.pop();
 	testFilePath.push('json');
@@ -161,195 +135,6 @@ describe('test cases', function() {
 		    // parser stream is done, and ready to have more stuff written to it.
 		  };
 
-
-
-      // for (var x = 0; x < testFile.steps.length; x++) {
-			// function executeStepGI(x){
-			// 	if(x >= testFile.steps.length){
-			// 		return;
-			// 	}
-			// 	var nextFunc = (function(){
-			// 		var next_x = x+1;
-			// 		return function(){
-			// 			executeStepGI(next_x);
-			// 		};
-			// 	})();
-			// 	var errFunc = (function(){
-			// 		var jsonLine = lineNumberLog[x]
-			// 		return function(){
-			// 			console.log('json Line Number: '+ jsonLine);
-			// 		};
-			// 	})();
-			//
-			// 	var step = testFile.steps[x];
-      //   var action = step.action;
-			// 	var data1 = step.data1;
-			// 	var data2 = step.data2;
-			//
-			// 	browser.controlFlow().execute(
-			// 		function(){
-			// 			console.log('action: ' + action + '\n');
-			// 			console.log('data1: ' + data1 + '\n');
-			// 			console.log('data3: ' + step.data3 + '\n');
-			// 		}
-			// 	);
-      //   switch (action) {
-      //     case 'open':
-      //       browser.get(step.data1).then(nextFunc);
-      //       break;
-			// 		case 'store':
-			// 			global.storeMap[data2] = data1;
-			// 			executeStepGI(x+1);
-      //       break;
-			// 		case 'waitForPageToLoad':
-			// 			browser.waitForAngular().then(nextFunc);
-			// 			break;
-			// 		case 'waitForElementPresent':
-			// 			var selectorType = data1.split('=')[0];
-			// 			var selectorText = data1.split('=');
-			// 			selectorText.shift();
-			// 			selectorText = selectorText.join('=');
-			// 			var ele;
-			// 			if(selectorType == 'css'){
-			// 				var fooString = "return $('selectorText')"
-			// 				selectorText = selectorText.replace('"', '\"');
-			// 				fooString = fooString.replace('selectorText', selectorText);
-			// 				var foo = new Function(fooString);
-			// 				ele = element(by.js(foo));
-			// 			}else{
-			// 				ele = element(by[selectorType](selectorText));
-			// 			}
-			// 			browser.wait(global.EC.presenceOf(ele, 20000)).then(
-			// 				nextFunc, errFunc
-			// 				// ,function(err){
-			// 				// 	browser.controlFlow().execute(function(){console.log(selectorType + '::' + selectorText +' is not a valid selector or not present')})
-			// 				// 	err.message += '\n' + selectorType + ':' + selectorText +' is not a valid selector or not present';
-			// 				// 	browser.pause();
-			// 				// 	throw err;
-			// 				// }
-			// 			);
-			// 			break;
-			// 		case 'type':
-			// 			var selectorType = data1.split('=')[0];
-			// 			var selectorText = data1.split('=');
-			// 			selectorText.shift();
-			// 			selectorText = selectorText.join('=');
-			// 			var ele;
-			// 			if(selectorType == 'css'){
-			// 				var fooString = "return $('selectorText')"
-			// 				selectorText = selectorText.replace('"', '\"');
-			// 				fooString = fooString.replace('selectorText', selectorText);
-			// 				var foo = new Function(fooString);
-			// 				ele = element(by.js(foo));
-			// 			}else{
-			// 				ele = element(by[selectorType](selectorText));
-			// 			}
-			//
-			// 			ele.sendKeys(data2).then(
-			// 				nextFunc,
-			// 				function(err){
-			// 					if(data1.includes('ace')){
-			// 						browser.actions().doubleClick($('div.ace_content')).perform();
-			// 						$('textarea.ace_text-input').sendKeys(data2).then(
-			// 							function(){
-			// 								executeStepGI(x+1);
-			// 							},function(err1){
-			// 								throw err1;
-			// 							}
-			// 						)
-			// 					}
-			// 				}
-			// 			);
-			// 			break;
-			// 		case 'click':
-			// 			var selectorType = data1.split('=')[0];
-			// 			var selectorText = data1.split('=');
-			// 			selectorText.shift();
-			// 			selectorText = selectorText.join('=');
-			// 			var ele;
-			// 			if(selectorType == 'css'){
-			// 				var fooString = "return $('selectorText')"
-			// 				selectorText = selectorText.replace('"', '\"');
-			// 				fooString = fooString.replace('selectorText', selectorText);
-			// 				var foo = new Function(fooString);
-			// 				ele = element(by.js(foo));
-			//
-			// 			}else{
-			// 				ele = element(by[selectorType](selectorText));
-			// 			}
-			// 			ele.click().then(
-			// 				nextFunc,function(err){
-			// 					if(selectorType == 'css'){
-			// 						var fooString = "return $('selectorText').click()"
-			// 						selectorText = selectorText.replace('"', '\"');
-			// 						fooString = fooString.replace('selectorText', selectorText);
-			// 						var foo = new Function(fooString);
-			// 						browser.executeScript(fooString).then(
-			// 							function(res){
-			// 								if(res == null){
-			// 									browser.controlFlow().execute(function(){console.log('ERROR: selectorType:'+selectorType+',selectorText:'+selectorText+'\n')}).then(
-			// 										function(){
-			// 											browser.pause();
-			// 											throw err;
-			// 										}
-			// 									);
-			// 								}else{
-			// 									nextFunc();
-			// 								}
-			// 							}
-			// 						)
-			// 					}else{
-			//
-			// 						browser.controlFlow().execute(function(){console.log('ERROR: selectorType:'+selectorType+',selectorText:'+selectorText+'\n')}).then(
-			// 						function(){
-			// 							browser.pause();
-			// 						}
-			// 					);
-			// 				}
-			//
-			// 				}
-			// 			);
-			// 			break;
-			// 		case 'doubleClick':
-			// 			var selectorType = data1.split('=')[0];
-			// 			var selectorText = data1.split('=');
-			// 			selectorText.shift();
-			// 			selectorText = selectorText.join('=');
-			// 			var ele;
-			// 			if(selectorType == 'css'){
-			// 				var fooString = "return $('selectorText')"
-			// 				selectorText = selectorText.replace('"', '\"');
-			// 				fooString = fooString.replace('selectorText', selectorText);
-			// 				var foo = new Function(fooString);
-			// 				ele = element(by.js(foo));
-			// 			}else{
-			// 				ele = element(by[selectorType](selectorText));
-			// 			}
-			// 			browser.actions().doubleClick(ele).perform().then(
-			// 				nextFunc
-			// 			);
-			// 			break;
-			// 		case 'pause':
-			// 			browser.sleep(data1).then(
-			// 				nextFunc
-			// 			);
-			// 		case 'runScript':
-			// 			browser.executeScript(data1).then(
-			// 				nextFunc
-			// 			);
-			// 			break;
-			// 		default:
-			// 			browser.controlFlow().execute(
-			// 				function(){
-			// 					console.log('unsupported action:' + action);
-			// 				}
-			// 			).then(
-			// 				nextFunc
-			// 			)
-			//
-			// 	}
-			// }
-
 			var jsonString = fs.readFileSync(jsonFilePath,'utf-8',function(err,data){
 		    if(err){
 		      return console.error(err);
@@ -372,10 +157,11 @@ describe('test cases', function() {
 					var stepId_inner = stepId;
 					return function(extraMsg){
 						var ex = extraMsg;
-						return function(){
-							var errorMsg = 'Error in Step ID: '+ stepId_inner + '\n'
-							errorMsg += ex
-							throw Error(errorMsg)
+						return function(err){
+							var errorMsg = 'Error in Step ID: '+ stepId_inner + '\n';
+							errorMsg += ex;
+							err.message += '\n' + errorMsg;
+							throw err;
 						};
 					};
 				})();
@@ -407,9 +193,19 @@ describe('test cases', function() {
 						selectorText = selectorText.join('=');
 						var ele;
 						if(selectorType == 'css'){
-							var fooString = "return $('selectorText')"
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							//selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
+							console.log(fooString)
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
 						}else{
@@ -425,8 +221,17 @@ describe('test cases', function() {
 						selectorText = selectorText.join('=');
 						var ele;
 						if(selectorType == 'css'){
-							var fooString = "return $('selectorText')"
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							// selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
@@ -442,8 +247,17 @@ describe('test cases', function() {
 						selectorText = selectorText.join('=');
 						var ele;
 						if(selectorType == 'css'){
-							var fooString = "return $('selectorText')"
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							//selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
@@ -460,8 +274,17 @@ describe('test cases', function() {
 						selectorText = selectorText.join('=');
 						var ele;
 						if(selectorType == 'css'){
-							var fooString = "return $('selectorText')"
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							//selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
@@ -480,8 +303,17 @@ describe('test cases', function() {
 						var fooString;
 
 						if(selectorType == 'css'){
-							fooString = "return $('selectorText')";
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							//selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
@@ -489,7 +321,17 @@ describe('test cases', function() {
 
 							// rollback function
 							var rollbackFunc = (function(){
-								var fooString_1 = "$('selectorText').click();";
+								var fooString_1;
+								if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+									fooString_1 = '$("selectorText").click()'
+								}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+									fooString_1 = "$('selectorText').click()"
+								}else if(selectorText.indexOf("'") != -1){
+									fooString_1 = '$("selectorText").click()'
+								}else{
+									fooString_1 = "$('selectorText').click()"
+								}
+								//selectorText = selectorText.replace('"', '\"');
 								var errFunc_1 = errFunc_inner
 								var errFunc_inner_1 = errFunc(__filename + ' line: ' + __line + '\nelement cannot be found, \nselectorType: css, selector: '+ selectorText);
 								fooString_1 = fooString_1.replace(/selectorText/g, selectorText);
@@ -532,8 +374,17 @@ describe('test cases', function() {
 						selectorText = selectorText.join('=');
 						var ele;
 						if(selectorType == 'css'){
-							var fooString = "return $('selectorText')"
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							//selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
@@ -559,6 +410,14 @@ describe('test cases', function() {
 							}
 						);
 						break;
+					case 'storeEval':
+						var errFunc_inner = errFunc(__filename + ' line: ' + __line + '\nEval failed');
+						browser.executeScript(data1).then(
+							function(res){
+								global.storeMap[data2] = res
+							}
+						);
+						break;
 					case 'assertText':
 						var selectorType = data1.split('=')[0];
 						var selectorText = data1.split('=');
@@ -566,15 +425,29 @@ describe('test cases', function() {
 						selectorText = selectorText.join('=');
 						var ele;
 						if(selectorType == 'css'){
-							var fooString = "return $('selectorText')"
-							selectorText = selectorText.replace('"', '\"');
+							var fooString;
+							if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
+								fooString = 'return $("selectorText")'
+							}else if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") > selectorText.indexOf('"')){
+								fooString = "return $('selectorText')"
+							}else if(selectorText.indexOf("'") != -1){
+								fooString = 'return $("selectorText")'
+							}else{
+								fooString = "return $('selectorText')"
+							}
+							//selectorText = selectorText.replace('"', '\"');
 							fooString = fooString.replace('selectorText', selectorText);
 							var foo = new Function(fooString);
 							ele = element(by.js(foo));
 						}else{
 							ele = element(by[selectorType](selectorText));
 						}
-						expect(ele.getText()).toEqual(data2, __filename + ' line: ' + __line + '\nassert text of element failed, \nselectorType: css, selector: '+ selectorText);
+						data2 = data2.replace('*', '').replace('*', '');
+						var errFunc_inner = errFunc(__filename + ' line: ' + __line + '\nassert text failed, expect: ' + data2);
+						browser.wait(global.EC.textToBePresentInElement(ele, data2), 5000).then(
+							function(){},errFunc_inner
+						)
+						//expect(ele.getText()).toEqual(data2, __filename + ' line: ' + __line + '\nassert text of element failed, \nselectorType: css, selector: '+ selectorText);
 						break;
 					default:
 						throw Error('unsupported action: ' + action);
