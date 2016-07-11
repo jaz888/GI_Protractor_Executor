@@ -3,9 +3,214 @@ global.storeMap['KEY_ENTER'] = protractor.Key.ENTER
 global.EC = protractor.ExpectedConditions;
 var helper = require('./scrollElemToBottomOfView');
 //var testFilePath = './testCases/Auto_Use_Tier_Override.json';
-var testFilePath = './testCases/tci.html';
-if(testFilePath.split('.').pop() == 'html'){
-	var htmlFilePath = testFilePath;
+
+global.filesArray = []
+global.fs = require('fs');
+var commonPath = './testCases/common'
+function readDir(dirPath){
+	if(global.fs.lstatSync(dirPath).isDirectory()){
+		global.fs.readdirSync(dirPath).forEach(
+			function(subpath){
+				readDir(dirPath+'/'+subpath);
+			}
+		)
+	}else{
+		if(dirPath.split('.').pop() == 'json'||dirPath.split('.').pop() == 'html'){
+			global.filesArray.push(dirPath);
+		}
+	}
+}
+readDir(commonPath);
+
+global.filesArray.push('./testCases/tci.html')
+
+
+//==============read and store variable========================//
+var i;
+for(i = 0; i < global.filesArray.length; i++){
+	if(global.filesArray[i].split('.').pop() == 'html'){
+		var htmlFilePath = global.filesArray[i];
+		if(htmlFilePath.charAt(0) === '.'){
+			htmlFilePath = htmlFilePath.substr(1);
+		}
+		var htmlFilePath = __dirname + htmlFilePath;
+
+		var cheerio = require('cheerio');
+
+		var htmlString = require('fs').readFileSync(htmlFilePath,'utf-8',function(err,data){
+			if(err){
+				return console.error(err);
+			}
+		});
+
+		var htmlDom = cheerio.load(htmlString);
+		var html2json = {};
+		html2json.testInfo = {};
+		html2json.testInfo.discribe = htmlDom('thead').text().trim();
+		html2json.testInfo.it = htmlDom('thead').text().trim();
+		html2json.testInfo.type = "GI";
+		html2json.steps = [];
+		var tmpStep = {};
+		var tokens = htmlString.match(/<td>(.|[\n\r])*?<\/td>/g)
+			.map(function(val){return val.replace('</td>', '')})
+			.map(function(val){return val.replace('<td>', '')});
+		var tokenNum = tokens.length;
+		var j = 0;
+		for(var tokenId in tokens){
+				if(j == 0){
+					tmpStep.action = tokens[tokenId];
+					j++;
+				}else	if(j == 1){
+					tmpStep.data1 = tokens[tokenId];
+					j++;
+				}else if(j == 2){
+					tmpStep.data2 = tokens[tokenId];
+					if(tmpStep.action != 'runScript'){
+						tmpStep.data2 = tmpStep.data2.split("\r\n").join(" ")
+						// tmpStep.data2 = tmpStep.data2.split("'").join('\"')
+					}
+					html2json.steps.push(tmpStep);
+					tmpStep = {};
+					j = 0;
+				}else{
+					throw Error('error in parsing html to json');
+				}
+		}
+
+		for(var j in html2json.steps){
+			if(html2json.steps[j].action == 'store'){
+				global.storeMap[html2json.steps[j].data2] = html2json.steps[j].data1;
+			}
+		}
+	}else if(global.filesArray[i].split('.').pop() == 'json'){
+		var html2json = require(global.filesArray[i])
+		for(var j in html2json.steps){
+			if(html2json.steps[j].action == 'store'){
+				global.storeMap[html2json.steps[j].data2] = html2json.steps[j].data1;
+			}
+		}
+	}
+}
+
+
+//==============replace placeholders with coresponding variables, and then store external steps========================//
+for(var fid = 0; fid < global.filesArray.length; fid++){
+	if(global.filesArray[fid].split('.').pop() == 'html'){
+		var htmlFilePath = global.filesArray[fid];
+		if(htmlFilePath.charAt(0) === '.'){
+			htmlFilePath = htmlFilePath.substr(1);
+		}
+		var htmlFilePath = __dirname + htmlFilePath;
+
+		var cheerio = require('cheerio');
+
+		var htmlString = require('fs').readFileSync(htmlFilePath,'utf-8',function(err,data){
+			if(err){
+				return console.error(err);
+			}
+		});
+
+		var htmlDom = cheerio.load(htmlString);
+		var html2json = {};
+		html2json.testInfo = {};
+		html2json.testInfo.discribe = htmlDom('thead').text().trim();
+		html2json.testInfo.it = htmlDom('thead').text().trim();
+		html2json.testInfo.type = "GI";
+		html2json.steps = [];
+		var tmpStep = {};
+		var tokens = htmlString.match(/<td>(.|[\n\r])*?<\/td>/g)
+			.map(function(val){return val.replace('</td>', '')})
+			.map(function(val){return val.replace('<td>', '')});
+		var tokenNum = tokens.length;
+		var j = 0;
+		for(var tokenId in tokens){
+				if(j == 0){
+					tmpStep.action = tokens[tokenId];
+					j++;
+				}else	if(j == 1){
+					tmpStep.data1 = tokens[tokenId];
+					j++;
+				}else if(j == 2){
+					tmpStep.data2 = tokens[tokenId];
+					if(tmpStep.action != 'runScript'){
+						tmpStep.data2 = tmpStep.data2.split("\r\n").join(" ")
+						// tmpStep.data2 = tmpStep.data2.split("'").join('\"')
+					}
+					html2json.steps.push(tmpStep);
+					tmpStep = {};
+					j = 0;
+				}else{
+					throw Error('error in parsing html to json');
+				}
+		}
+		var tmpSteps = [];
+		for(var i in html2json.steps){
+			if(html2json.steps[i].action == 'externalStep' || html2json.steps[i].action == 'store'){
+				if(html2json.steps[i].action == 'externalStep'){
+					tmpSteps.concat(global[html2json.steps[i].data1]);
+				}
+			}else{
+				tmpSteps.push(html2json.steps[i]);
+			}
+		}
+		html2json.steps = tmpSteps;
+
+		for(var i in html2json.steps){
+			html2json.steps[i].data3 = parseInt(i)+1;
+			for(var key in global.storeMap){
+				var keyPattern = '${' + key;
+				keyPattern += '}';
+				if(html2json.steps[i].data1.indexOf(keyPattern) > -1){
+					html2json.steps[i].data1 = html2json.steps[i].data1.replace(keyPattern, global.storeMap[key]);
+				}
+				if(html2json.steps[i].data2.indexOf(keyPattern) > -1){
+					html2json.steps[i].data2 = html2json.steps[i].data2.replace(keyPattern, global.storeMap[key]);
+				}
+			}
+		}
+
+		testFilePath = global.filesArray[fid].split('.');
+		testFilePath.pop();
+		testFilePath = testFilePath.join('.');
+		global[testFilePath] = html2json;
+	}else if(global.filesArray[fid].split('.').pop() == 'json'){
+		var html2json = require(global.filesArray[fid]);
+		for(var i in html2json.steps){
+			if(html2json.steps[i].action == 'externalStep' || html2json.steps[i].action == 'store'){
+				if(html2json.steps[i].action == 'externalStep'){
+					tmpSteps.concat(global[html2json.steps[i].data1]);
+				}
+			}else{
+				tmpSteps.push(html2json.steps[i]);
+			}
+		}
+		html2json.steps = tmpSteps;
+
+		for(var i in html2json.steps){
+			html2json.steps[i].data3 = parseInt(i)+1;
+			for(var key in global.storeMap){
+				var keyPattern = '${' + key;
+				keyPattern += '}';
+				if(html2json.steps[i].data1.indexOf(keyPattern) > -1){
+					html2json.steps[i].data1 = html2json.steps[i].data1.replace(keyPattern, global.storeMap[key]);
+				}
+				if(html2json.steps[i].data2.indexOf(keyPattern) > -1){
+					html2json.steps[i].data2 = html2json.steps[i].data2.replace(keyPattern, global.storeMap[key]);
+				}
+			}
+		}
+
+		testFilePath = global.filesArray[fid].split('.');
+		testFilePath.pop();
+		testFilePath = testFilePath.join('.');
+		global[testFilePath] = html2json;
+	}
+}
+//==============generate json file========================//
+//get last file path
+var finalPath = global.filesArray[global.filesArray.length-1];
+if(finalPath.split('.').pop() == 'html'){
+	var htmlFilePath = finalPath;
 	if(htmlFilePath.charAt(0) === '.'){
 		htmlFilePath = htmlFilePath.substr(1);
 	}
@@ -56,8 +261,10 @@ if(testFilePath.split('.').pop() == 'html'){
 	var j = 0;
 	var tmpSteps = [];
 	for(var i in html2json.steps){
-		if(html2json.steps[i].action == 'store'){
-			global.storeMap[html2json.steps[i].data2] = html2json.steps[i].data1;
+		if(html2json.steps[i].action == 'externalStep' || html2json.steps[i].action == 'store'){
+			if(html2json.steps[i].action == 'externalStep'){
+				tmpSteps = tmpSteps.concat(global[html2json.steps[i].data1].steps);
+			}
 		}else{
 			tmpSteps.push(html2json.steps[i]);
 		}
@@ -78,20 +285,51 @@ if(testFilePath.split('.').pop() == 'html'){
 		}
 	}
 
-	testFilePath = testFilePath.split('.');
-	testFilePath.pop();
-	testFilePath.push('json');
-	testFilePath = testFilePath.join('.');
-	require('fs').writeFileSync(testFilePath, JSON.stringify(html2json, null, 2) , 'utf-8');
+	finalPath = finalPath.split('.');
+	finalPath.pop();
+	finalPath.push('json');
+	finalPath = finalPath.join('.');
+	require('fs').writeFileSync(finalPath, JSON.stringify(html2json, null, 2) , 'utf-8');
+}else{
+	var tmpSteps = [];
+	var html2json = require(finalPath);
+	for(var i in html2json.steps){
+		if(html2json.steps[i].action == 'externalStep' || html2json.steps[i].action == 'store'){
+			if(html2json.steps[i].action == 'externalStep'){
+				tmpSteps = tmpSteps.concat(global[html2json.steps[i].data1].steps);
+			}
+		}else{
+			tmpSteps.push(html2json.steps[i]);
+		}
+	}
+	html2json.steps = tmpSteps;
+	for(var i in html2json.steps){
+		html2json.steps[i].data3 = parseInt(i)+1;
+		for(var key in global.storeMap){
+			var keyPattern = '${' + key;
+			keyPattern += '}';
+			if(html2json.steps[i].data1.indexOf(keyPattern) > -1){
+				html2json.steps[i].data1 = html2json.steps[i].data1.replace(keyPattern, global.storeMap[key]);
+			}
+			if(html2json.steps[i].data2.indexOf(keyPattern) > -1){
+				html2json.steps[i].data2 = html2json.steps[i].data2.replace(keyPattern, global.storeMap[key]);
+			}
+		}
+	}
+	finalPath = finalPath.split('.');
+	finalPath.pop();
+	finalPath.push('translated.json');
+	finalPath = finalPath.join('.');
+	require('fs').writeFileSync(finalPath, JSON.stringify(html2json, null, 2) , 'utf-8');
 }
+
+console.log('final execute file path: ' + finalPath);
 
 // by here, testFile need to be one single file which contains all steps and data, no variable should be in
 // so, do not modify json file directly since it will be overwrite when html file with same filename is being parsing.
-var testFile = require(testFilePath);
+var testFile = require(finalPath);
 describe('test cases', function() {
 		it('should run all steps in JSON', function() {
-			var sgpt = require('sg-protractor-tools');
-
 
 			// need to install clarinet first
 			// load filesystem, utl, JSON parser and debuglog
@@ -100,10 +338,10 @@ describe('test cases', function() {
 			var clarinet = require("clarinet");
 			var parser = clarinet.parser();
 			var lineNumberLog = [];
-			if(testFilePath.charAt(0) === '.'){
-				testFilePath = testFilePath.substr(1);
+			if(finalPath.charAt(0) === '.'){
+				finalPath = finalPath.substr(1);
 			}
-			var jsonFilePath = __dirname + testFilePath;
+			var jsonFilePath = __dirname + finalPath;
 			var currentElement = null;
 
 
