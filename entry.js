@@ -1,6 +1,7 @@
 global.storeMap = {};
 global.storeMap['KEY_ENTER'] = protractor.Key.ENTER
 global.EC = protractor.ExpectedConditions;
+var helper = require('./scrollElemToBottomOfView');
 //var testFilePath = './testCases/Auto_Use_Tier_Override.json';
 var testFilePath = './testCases/tci.html';
 if(testFilePath.split('.').pop() == 'html'){
@@ -84,10 +85,12 @@ if(testFilePath.split('.').pop() == 'html'){
 	require('fs').writeFileSync(testFilePath, JSON.stringify(html2json, null, 2) , 'utf-8');
 }
 
+// by here, testFile need to be one single file which contains all steps and data, no variable should be in
+// so, do not modify json file directly since it will be overwrite when html file with same filename is being parsing.
 var testFile = require(testFilePath);
 describe('test cases', function() {
 		it('should run all steps in JSON', function() {
-			protractor.ignoreSynchronization = true;
+			var sgpt = require('sg-protractor-tools');
 
 
 			// need to install clarinet first
@@ -265,7 +268,17 @@ describe('test cases', function() {
 							ele = element(by[selectorType](selectorText));
 						}
 						var errFunc_inner = errFunc(__filename + ' line: ' + __line + '\nsend key failed \nselectorType: css, selector: '+ selectorText);
-						ele.sendKeys(data2).then(function(){}, errFunc_inner)
+
+						ele.clear().sendKeys(data2).then(
+							function(){},
+							function(){
+								helper.scrollElemFinderIntoView(ele.getWebElement());
+								ele.clear().sendKeys(data2).then(
+									function(){},
+									errFunc_inner
+								)
+							}
+						)
 						break;
 					case 'sendKeys':
 						var selectorType = data1.split('=')[0];
@@ -292,7 +305,17 @@ describe('test cases', function() {
 							ele = element(by[selectorType](selectorText));
 						}
 						var errFunc_inner = errFunc(__filename + ' line: ' + __line + '\nsend key failed \nselectorType: css, selector: '+ selectorText);
-						ele.sendKeys(data2).then(function(){}, errFunc_inner)
+						browser.executeScript("arguments[0].scrollIntoView();", ele.getWebElement());
+						ele.sendKeys(data2).then(
+							function(){},
+							function(){
+								helper.scrollElemFinderIntoView(ele.getWebElement());
+								ele.sendKeys(data2).then(
+									function(){},
+									errFunc_inner
+								)
+							}
+						)
 						break;
 					case 'click':
 						var selectorType = data1.split('=')[0];
@@ -319,7 +342,6 @@ describe('test cases', function() {
 							ele = element(by.js(foo));
 							var errFunc_inner = errFunc(__filename + ' line: ' + __line + '\nelement cannot be found, \nselectorType: css, selector: '+ selectorText);
 
-							// rollback function
 							var rollbackFunc = (function(){
 								var fooString_1;
 								if(selectorText.indexOf("'") != -1 && selectorText.indexOf('"') != -1 && selectorText.indexOf("'") < selectorText.indexOf('"')){
@@ -340,29 +362,39 @@ describe('test cases', function() {
 								}
 							})();
 							expect(ele.isPresent()).toBe(true);
-							var isClickable = global.EC.elementToBeClickable(ele);
-							browser.wait(isClickable, 10000, 'timeout' ).then(
+							browser.executeScript("arguments[0].scrollIntoView();", ele.getWebElement());
+							ele.click().then(
+								function(){},
 								function(){
-									ele.click().then(
-										function(){},
-										rollbackFunc
-									)
-								},rollbackFunc
-							)
-
-						}else if(selectorType == 'xpath'){
-							ele = element(by[selectorType](selectorText));
-							expect(ele.isPresent()).toBe(true);
-							var isClickable = global.EC.elementToBeClickable(ele);
-							var errFunc_inner = errFunc(__filename + ' line: ' + __line + '\nelement cannot be found, \nselectorType: xpath, selector: '+ selectorText);
-							browser.wait(isClickable, 10000, 'timeout').then(
-								function(){
+									helper.scrollElemFinderIntoView(ele.getWebElement());
 									ele.click().then(
 										function(){},
 										errFunc_inner
 									)
-								},errFunc_inner
+								}
 							)
+							// var isClickable = global.EC.elementToBeClickable(ele);
+							// browser.wait(isClickable, 10000, 'timeout' ).then(
+							// 	function(){
+							// 		ele.click();
+							// 	},errFunc_inner
+							// )
+
+						}else if(selectorType == 'xpath'){
+							ele = element(by[selectorType](selectorText));
+							expect(ele.isPresent()).toBe(true);
+							browser.executeScript("arguments[0].scrollIntoView();", ele.getWebElement());
+							ele.click().then(
+								function(){},
+								function(){
+									helper.scrollElemFinderIntoView(ele.getWebElement());
+									ele.click().then(
+										function(){},
+										errFunc_inner
+									)
+								}
+							)
+
 						}else{
 							throw Error('unsupported selector type');
 						}
